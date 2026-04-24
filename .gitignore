@@ -1,0 +1,16 @@
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pdf
+pdf_texts/
+NonlinearTSA_extracted/
+NonlinearTSA_0.5.0.tar.gz
+output.txt
+extract_all.py
+tarur_tutorial.py
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
