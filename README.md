@@ -27,9 +27,13 @@ Most nonlinear unit root test implementations in R (e.g., `NonlinearTSA`) **do n
 
 ## Installation
 
+Install the latest version (v1.0.1) directly from PyPI:
+
 ```bash
-pip install tarur
+pip install tarur==1.0.1
 ```
+
+*(You can also simply use `pip install tarur` to always get the latest version).*
 
 From source:
 
@@ -42,7 +46,11 @@ cd tarur && pip install -e .
 
 ---
 
-## Quick Start
+## Quick Start & Tutorial
+
+We highly recommend checking out the **[Complete Interactive Tutorial Notebook (tarur_tutorial.ipynb)](https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb)** included in this repository. It demonstrates how to run all 17 tests on real financial data (EUR/USD, Gold, S&P 500) and generate publication-quality dashboards.
+
+### Basic Usage
 
 ```python
 import numpy as np
@@ -55,7 +63,7 @@ y = np.log(your_price_series)
 result = tarur.kss_test(y, case='demeaned', max_lags=8)
 print(result)
 
-# Full battery — all 11 tests at once
+# Full battery — all 11+ tests at once
 batch = tarur.run_all_tests(y, case='demeaned', max_lags=8)
 ```
 
