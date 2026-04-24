@@ -10,7 +10,7 @@ from parts.guide_tar import TAR_SECTION, GRID_SECTION
 from parts.guide_rest import EXT_SECTION, COINT_SECTION, LIN_SECTION, CV_TABLE_SECTION
 
 guide_html = (
-    NAV.format(title="Theory Guide", g='class="active"', a='') +
+    NAV.format(title="Theory Guide", g='class="active"', a='', r='') +
     HERO + TOC +
     ESTAR_SECTION + SMOOTH_SECTION + TAR_SECTION + GRID_SECTION +
     EXT_SECTION + COINT_SECTION + LIN_SECTION + CV_TABLE_SECTION +
@@ -22,7 +22,7 @@ with open("docs/guide.html", "w", encoding="utf-8") as f:
 print(f"guide.html written ({len(guide_html)//1024} KB)")
 
 # ── API Reference page ──────────────────────────────────────────────
-API_HTML = NAV.format(title="API Reference", g='', a='class="active"') + """
+API_HTML = NAV.format(title="API Reference", g='', a='class="active"', r='') + """
 <section style="background:linear-gradient(135deg,#f0f7ff,#e8f4ff,#f0fdf8);padding:4rem 2rem 3rem;text-align:center;border-bottom:1px solid var(--border);">
   <div class="section-tag">API Reference</div>
   <h1 style="font-size:2.5rem;font-weight:700;letter-spacing:-.03em;margin-bottom:.5rem;">Complete API Documentation</h1>

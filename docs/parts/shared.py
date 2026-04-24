@@ -13,6 +13,7 @@ NAV = """<!DOCTYPE html>
     <a href="index.html">Home</a>
     <a href="guide.html" {g}>Theory Guide</a>
     <a href="api.html" {a}>API Reference</a>
+    <a href="results.html" {r}>Results</a>
     <a href="https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb" target="_blank">Tutorial</a>
     <a href="https://github.com/merwanroudane/tarur" target="_blank">GitHub</a>
     <a href="https://pypi.org/project/tarur/" target="_blank" class="btn-nav">PyPI</a>
