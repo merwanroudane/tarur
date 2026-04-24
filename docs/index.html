@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TARUR — Nonlinear Unit Root Testing Library for Python</title>
+<meta name="description" content="TARUR: Python library with 17+ nonlinear unit root tests, embedded critical values, automatic decisions, and publication-quality output. By Dr. Merwan Roudane."/>
+<link rel="stylesheet" href="assets/css/style.css"/>
+<!-- MathJax for math equations -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']], packages: {'[+]': ['ams']} },
+  options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-cml.js"></script>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="logo-badge">TARUR</span>
+    <span class="logo-text">Nonlinear Unit Root Tests</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="guide.html">Theory Guide</a>
+    <a href="api.html">API</a>
+    <a href="https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb" target="_blank">Tutorial</a>
+    <a href="https://github.com/merwanroudane/tarur" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/tarur/" target="_blank" class="btn-nav">PyPI</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-badge">🧪 Open Source · MIT License · v1.0.1</div>
+  <h1><span>TARUR</span></h1>
+  <p class="subtitle">A high-performance Python library for <strong>nonlinear unit root testing</strong> — 17+ tests, embedded critical values from original papers, automatic reject/accept decisions, and publication-quality output.</p>
+
+  <div style="display:flex;justify-content:center;margin-bottom:1.75rem;">
+    <div class="install-banner">
+      <span class="dollar">$</span>
+      <span class="cmd">pip install tarur==1.0.1</span>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('pip install tarur==1.0.1');this.textContent='✓ Copied!'">Copy</button>
+    </div>
+  </div>
+
+  <div class="hero-buttons">
+    <a href="guide.html" class="btn btn-primary">📖 Researcher's Guide</a>
+    <a href="https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb" target="_blank" class="btn btn-green">📓 Tutorial Notebook</a>
+    <a href="https://github.com/merwanroudane/tarur" target="_blank" class="btn btn-outline">⭐ GitHub</a>
+    <a href="https://pypi.org/project/tarur/" target="_blank" class="btn btn-outline">📦 PyPI</a>
+  </div>
+
+  <div class="badges">
+    <img src="https://img.shields.io/pypi/v/tarur?color=%231a56db&label=PyPI&style=flat-square" alt="PyPI"/>
+    <img src="https://img.shields.io/pypi/pyversions/tarur?style=flat-square" alt="Python"/>
+    <img src="https://img.shields.io/badge/license-MIT-0ea472?style=flat-square" alt="License"/>
+    <img src="https://img.shields.io/badge/tests-17%2B-f59e0b?style=flat-square" alt="Tests"/>
+    <img src="https://img.shields.io/badge/critical_values-embedded-1a56db?style=flat-square" alt="CVs"/>
+  </div>
+</section>
+
+<!-- ── Stats ── -->
+<div class="stats-strip">
+  <div class="stat"><div class="num">17+</div><div class="label">Econometric Tests</div></div>
+  <div class="stat"><div class="num">14</div><div class="label">Original Papers</div></div>
+  <div class="stat"><div class="num">3</div><div class="label">Bug Fixes vs R</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Manual CV Lookups</div></div>
+  <div class="stat"><div class="num">1</div><div class="label">Line to Run All Tests</div></div>
+</div>
+
+<!-- ── Why TARUR ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-tag">The Problem</div>
+    <h2 class="section-title anchor" id="why">Why TARUR?</h2>
+    <p class="section-sub">Researchers applying nonlinear unit root tests face a recurring frustration: existing implementations in R (e.g., <code>NonlinearTSA</code>) do not provide critical values, forcing manual lookups in the original papers for every test. TARUR eliminates this entirely.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Embedded Critical Values</h3>
+        <p>Every test uses its own CVs from the original paper (asymptotic + finite-sample). Automatic linear interpolation for intermediate sample sizes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✅</div>
+        <h3>Automatic Decisions</h3>
+        <p>Reject / fail-to-reject at 1%, 5%, and 10% — with a plain-English interpretation sentence — printed automatically for every test.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔬</div>
+        <h3>Bug Fixes Over R Code</h3>
+        <p>Corrects known errors in <code>NonlinearTSA</code>: Kruse's modified Wald τ, Hu-Chen's 3-parameter statistic, Sollis (2009) auxiliary regression.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>One-Line Full Battery</h3>
+        <p><code>tarur.run_all_tests(y)</code> runs every available test at once and produces a unified comparison table — ideal for papers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>LaTeX Export</h3>
+        <p>Call <code>batch.to_latex()</code> to get a ready-to-paste LaTeX table for your journal submission — no manual formatting.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Publication Visualizations</h3>
+        <p>Built-in diagnostic dashboards, test statistic comparison charts, and decision heatmaps via <code>batch.plot()</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Installation ── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-tag">Installation</div>
+    <h2 class="section-title anchor" id="install">Getting Started</h2>
+    <p class="section-sub">TARUR requires only the standard scientific Python stack. No R, no compiled extensions.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;" class="install-grid">
+      <div>
+        <h3 style="font-size:1rem;margin-bottom:.75rem;color:var(--text2);font-weight:600;">📦 From PyPI (Recommended)</h3>
+        <pre><span class="c"># Install the latest stable release</span>
+pip install tarur==1.0.1
+
+<span class="c"># Or always get the newest version</span>
+pip install tarur</pre>
+      </div>
+      <div>
+        <h3 style="font-size:1rem;margin-bottom:.75rem;color:var(--text2);font-weight:600;">🔧 From Source (Developers)</h3>
+        <pre>git clone https://github.com/merwanroudane/tarur.git
+cd tarur
+pip install -e .</pre>
+      </div>
+    </div>
+
+    <h3 style="font-size:1rem;margin:1.5rem 0 .75rem;color:var(--text2);font-weight:600;">🚀 Quick Example</h3>
+    <pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> <span class="cm">tarur</span>
+
+<span class="c"># Your time series (log-levels for financial data)</span>
+y = np.log(your_price_series)
+
+<span class="c"># ── Single test ────────────────────────────────────────</span>
+result = tarur.<span class="fn2">kss_test</span>(y, case=<span class="st">'demeaned'</span>, max_lags=<span class="nm">12</span>)
+<span class="fn2">print</span>(result)
+<span class="c"># → Prints statistic, CVs, decision, interpretation</span>
+
+<span class="c"># ── Full battery (17 tests at once) ────────────────────</span>
+batch = tarur.<span class="fn2">run_all_tests</span>(y, case=<span class="st">'demeaned'</span>, max_lags=<span class="nm">12</span>)
+<span class="fn2">print</span>(batch)           <span class="c"># Formatted table</span>
+batch.<span class="fn2">plot</span>()           <span class="c"># Dashboard</span>
+<span class="fn2">print</span>(batch.<span class="fn2">to_latex</span>()) <span class="c"># LaTeX for your paper</span></pre>
+    <div class="alert alert-success">
+      <span>✓</span>
+      <span>Requires: <strong>numpy ≥ 1.21</strong>, <strong>scipy ≥ 1.7</strong>, <strong>pandas ≥ 1.3</strong>, <strong>matplotlib ≥ 3.5</strong> — all standard, no additional installation needed if you use Anaconda.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Test Catalog ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-tag">Test Catalog</div>
+    <h2 class="section-title anchor" id="tests">Complete Test Reference</h2>
+    <p class="section-sub">All 17+ tests with their statistic type, critical value source, and rejection tail. Click the function name to see usage.</p>
+
+    <h3 style="font-size:1rem;font-weight:700;margin:1.5rem 0 .75rem;color:var(--primary);">ESTAR-Based Unit Root Tests</h3>
+    <div class="test-table-wrap">
+      <table class="test-table">
+        <thead><tr><th>Test</th><th>Function</th><th>Statistic</th><th>Tail</th><th>Key Feature</th></tr></thead>
+        <tbody>
+          <tr><td>KSS (2003)</td><td><code class="fn">kss_test()</code></td><td>tNL</td><td><span class="tag tag-left">Left</span></td><td>Foundational ESTAR — cubic auxiliary regression</td></tr>
+          <tr><td>Kruse (2011)</td><td><code class="fn">kruse_test()</code></td><td>Modified Wald τ</td><td><span class="tag tag-right">Right</span></td><td>Nonzero location c — corrects R bug</td></tr>
+          <tr><td>Sollis (2009)</td><td><code class="fn">sollis2009_test()</code></td><td>F_AE + Fas</td><td><span class="tag tag-right">Right</span></td><td>Asymmetric ESTAR + symmetry test</td></tr>
+          <tr><td>Hu &amp; Chen (2016)</td><td><code class="fn">hu_chen_test()</code></td><td>3-param τ</td><td><span class="tag tag-right">Right</span></td><td>Locally explosive, globally stationary</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:1rem;font-weight:700;margin:1.5rem 0 .75rem;color:var(--primary);">Smooth Transition Unit Root Tests</h3>
+    <div class="test-table-wrap">
+      <table class="test-table">
+        <thead><tr><th>Test</th><th>Function</th><th>Statistic</th><th>Tail</th><th>Key Feature</th></tr></thead>
+        <tbody>
+          <tr><td>LNV (1998)</td><td><code class="fn">lnv_test()</code></td><td>t_ADF</td><td><span class="tag tag-left">Left</span></td><td>Single logistic transition — Models A, B, C</td></tr>
+          <tr><td>Vougas (2006)</td><td><code class="fn">vougas_test()</code></td><td>t_ADF</td><td><span class="tag tag-left">Left</span></td><td>5 functional forms — Models A–E</td></tr>
+          <tr><td>Harvey &amp; Mills (2002)</td><td><code class="fn">harvey_mills_test()</code></td><td>t_ADF</td><td><span class="tag tag-left">Left</span></td><td>Double smooth transition — two structural breaks</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:1rem;font-weight:700;margin:1.5rem 0 .75rem;color:var(--primary);">Asymmetric / TAR Tests</h3>
+    <div class="test-table-wrap">
+      <table class="test-table">
+        <thead><tr><th>Test</th><th>Function</th><th>Statistic</th><th>Tail</th><th>Key Feature</th></tr></thead>
+        <tbody>
+          <tr><td>Enders &amp; Granger (1998)</td><td><code class="fn">enders_granger_test()</code></td><td>Φ</td><td><span class="tag tag-right">Right</span></td><td>MTAR with momentum indicator Iₜ</td></tr>
+          <tr><td>Sollis (2004)</td><td><code class="fn">sollis2004_test()</code></td><td>F_TAR</td><td><span class="tag tag-right">Right</span></td><td>ST-TAR with logistic detrending</td></tr>
+          <tr><td>Cook &amp; Vougas (2009)</td><td><code class="fn">cook_vougas_test()</code></td><td>F_MTAR</td><td><span class="tag tag-right">Right</span></td><td>ST-MTAR — own CV table (not Sollis)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:1rem;font-weight:700;margin:1.5rem 0 .75rem;color:var(--primary);">Grid-Search &amp; Extended Tests</h3>
+    <div class="test-table-wrap">
+      <table class="test-table">
+        <thead><tr><th>Test</th><th>Function</th><th>Statistic</th><th>Tail</th><th>Key Feature</th></tr></thead>
+        <tbody>
+          <tr><td>Kılıç (2011)</td><td><code class="fn">kilic_test()</code></td><td>inf-t</td><td><span class="tag tag-left">Left</span></td><td>Grid search over γ — higher power</td></tr>
+          <tr><td>Park &amp; Shintani (2016)</td><td><code class="fn">park_shintani_test()</code></td><td>inf-t</td><td><span class="tag tag-left">Left</span></td><td>Transitional autoregressive model</td></tr>
+          <tr><td>Pascalau (2007)</td><td><code class="fn">pascalau_test()</code></td><td>F</td><td><span class="tag tag-right">Right</span></td><td>Asymmetric NLSTAR with y⁴</td></tr>
+          <tr><td>Cuestas &amp; Garratt (2011)</td><td><code class="fn">cuestas_garratt_test()</code></td><td>χ²</td><td><span class="tag tag-right">Right</span></td><td>Cubic polynomial detrending</td></tr>
+          <tr><td>Cuestas &amp; Ordóñez (2014)</td><td><code class="fn">cuestas_ordonez_test()</code></td><td>tNL</td><td><span class="tag tag-left">Left</span></td><td>NLS logistic detrending + KSS</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:1rem;font-weight:700;margin:1.5rem 0 .75rem;color:var(--primary);">Cointegration &amp; Diagnostics</h3>
+    <div class="test-table-wrap">
+      <table class="test-table">
+        <thead><tr><th>Test</th><th>Function</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>KSS Cointegration (2006)</td><td><code class="fn">kss_cointegration_test(y1, y2)</code></td><td>Nonlinear cointegration via ESTAR residuals</td></tr>
+          <tr><td>Enders &amp; Siklos (2001)</td><td><code class="fn">enders_siklos_test(y1, y2)</code></td><td>Threshold cointegration with asymmetric ECM</td></tr>
+          <tr><td>Teräsvirta (1994)</td><td><code class="fn">terasvirta_test()</code></td><td>Linearity test + LSTAR vs ESTAR selection</td></tr>
+          <tr><td>ARCH (Engle 1982)</td><td><code class="fn">arch_test()</code></td><td>LM test for conditional heteroscedasticity</td></tr>
+          <tr><td>McLeod-Li</td><td><code class="fn">mcleod_li_test()</code></td><td>Portmanteau test on squared residuals</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── Gallery ── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-tag">Real Data Results</div>
+    <h2 class="section-title anchor" id="gallery">Tutorial Visualizations</h2>
+    <p class="section-sub">All plots generated by the <a href="https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb" target="_blank">tutorial notebook</a> using real EUR/USD, Gold, and S&amp;P 500 data (2010–2024).</p>
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="assets/img/plot_00.png" alt="Financial time series — level and returns"/>
+        <div class="gallery-caption">EUR/USD, Gold, and S&amp;P 500 — Level (log) and daily returns (2010–2024)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/img/plot_01.png" alt="EUR/USD test battery comparison"/>
+        <div class="gallery-caption">EUR/USD — Nonlinear unit root test battery: statistic vs. 5% critical value</div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/img/plot_02.png" alt="Gold test battery"/>
+        <div class="gallery-caption">Gold prices — Full test battery with reject/accept decisions at 5%</div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/img/plot_03.png" alt="S&P 500 test battery"/>
+        <div class="gallery-caption">S&amp;P 500 — Expected unit root: most tests correctly fail to reject H₀</div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/img/plot_04.png" alt="Decision heatmap"/>
+        <div class="gallery-caption">Decision heatmap — All tests × All series at 1%, 5%, 10%</div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/img/plot_05.png" alt="Series diagnostic analysis"/>
+        <div class="gallery-caption">Series diagnostic dashboard — Level, ACF, PACF, histogram, QQ-plot</div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/img/plot_06.png" alt="Monte Carlo ESTAR vs Random Walk"/>
+        <div class="gallery-caption">Monte Carlo validation — ESTAR process (reject H₀) vs. Random Walk (accept H₀)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Workflow ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-tag">Recommended Practice</div>
+    <h2 class="section-title anchor" id="workflow">Researcher Workflow</h2>
+    <p class="section-sub">Follow this four-step protocol for a rigorous empirical application.</p>
+    <pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> <span class="cm">tarur</span>
+
+<span class="c"># Step 1 — Load data in log-levels</span>
+y = np.log(your_price_series)
+
+<span class="c"># Step 2 — Test for linearity first (Teräsvirta 1994)</span>
+lin = tarur.<span class="fn2">terasvirta_test</span>(np.diff(y), d=<span class="nm">1</span>)
+<span class="fn2">print</span>(<span class="st">f"p-value: {lin.extra['p_linearity']:.4f}"</span>)
+<span class="fn2">print</span>(<span class="st">f"Suggested: {lin.extra['suggested_model']}"</span>)  <span class="c"># ESTAR or LSTAR</span>
+
+<span class="c"># Step 3 — Full nonlinear unit root battery</span>
+batch = tarur.<span class="fn2">run_all_tests</span>(y, case=<span class="st">'demeaned'</span>, max_lags=<span class="nm">12</span>)
+
+<span class="c"># Step 4 — Export for paper</span>
+df = batch.<span class="fn2">summary</span>()                           <span class="c"># pandas DataFrame</span>
+<span class="fn2">print</span>(batch.<span class="fn2">to_latex</span>())                         <span class="c"># Ready-to-paste LaTeX table</span>
+batch.<span class="fn2">plot</span>()                                    <span class="c"># Publication figure</span>
+tarur.<span class="fn2">plot_series_analysis</span>(y, title=<span class="st">'My Series'</span>) <span class="c"># Diagnostic dashboard</span></pre>
+  </div>
+</section>
+
+<!-- ── Citation ── -->
+<section class="section section-alt">
+  <div class="container text-center">
+    <div class="section-tag">Citation</div>
+    <h2 class="section-title" style="margin:0 auto .5rem;">Cite TARUR in Your Research</h2>
+    <p style="color:var(--text2);margin-bottom:1.5rem;">If TARUR contributed to your empirical findings, please cite it.</p>
+    <pre style="text-align:left;max-width:700px;margin:0 auto;">@software{tarur2024,
+  author  = {Roudane, Merwan},
+  title   = {{TARUR}: Nonlinear Unit Root Testing Library for Python},
+  year    = {2024},
+  version = {1.0.1},
+  url     = {https://github.com/merwanroudane/tarur}
+}</pre>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-logo">TARUR</div>
+  <div class="footer-sub">Nonlinear Unit Root Testing Library for Python · v1.0.1</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="guide.html">Theory Guide</a>
+    <a href="api.html">API Reference</a>
+    <a href="https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb" target="_blank">Tutorial Notebook</a>
+    <a href="https://github.com/merwanroudane/tarur" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/tarur/" target="_blank">PyPI</a>
+  </div>
+  <div class="footer-author">
+    Developed by <strong>Dr. Merwan Roudane</strong> ·
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a> ·
+    <a href="https://github.com/merwanroudane" target="_blank">github.com/merwanroudane</a>
+    <br/><br/>
+    <span style="color:#475569;">Released under the MIT License · Built with ❤️ for the econometrics community</span>
+  </div>
+</footer>
+
+</body>
+</html>

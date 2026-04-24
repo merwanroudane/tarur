@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Theory Guide — TARUR</title>
+<link rel="stylesheet" href="assets/css/style.css"/>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea']}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head><body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="logo-badge">TARUR</span><span class="logo-text">Nonlinear Unit Root Tests</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="guide.html" class="active">Theory Guide</a>
+    <a href="api.html" >API Reference</a>
+    <a href="https://github.com/merwanroudane/tarur/blob/main/tarur_tutorial.ipynb" target="_blank">Tutorial</a>
+    <a href="https://github.com/merwanroudane/tarur" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/tarur/" target="_blank" class="btn-nav">PyPI</a>
+  </div>
+</nav>
+<section style="background:linear-gradient(135deg,#f0f7ff,#e8f4ff,#f0fdf8);padding:4rem 2rem 3rem;text-align:center;border-bottom:1px solid var(--border);">
+  <div class="section-tag">Researcher's Guide</div>
+  <h1 style="font-size:2.5rem;font-weight:700;letter-spacing:-.03em;margin-bottom:.5rem;">Theory &amp; Test Formulations</h1>
+  <p style="color:var(--text2);max-width:700px;margin:0 auto;">Complete mathematical derivations, auxiliary regressions, critical value tables, and interpretation guidance for all 17+ tests — drawn directly from the original papers.</p>
+</section>
+
+<section class="section section-alt" style="padding:1.5rem 2rem;">
+<div class="container">
+<strong>Contents:</strong>
+<a href="#estar" style="margin-left:1rem;color:var(--primary);">1. ESTAR Tests</a>
+<a href="#smooth" style="margin-left:1rem;color:var(--primary);">2. Smooth Transition</a>
+<a href="#tar" style="margin-left:1rem;color:var(--primary);">3. TAR/MTAR</a>
+<a href="#grid" style="margin-left:1rem;color:var(--primary);">4. Grid Search</a>
+<a href="#extended" style="margin-left:1rem;color:var(--primary);">5. Extended Tests</a>
+<a href="#coint" style="margin-left:1rem;color:var(--primary);">6. Cointegration</a>
+<a href="#linearity" style="margin-left:1rem;color:var(--primary);">7. Linearity</a>
+<a href="#cvtable" style="margin-left:1rem;color:var(--primary);">8. CV Master Table</a>
+</div>
+</section>
+
+<section class="section" id="estar">
+<div class="container">
+<div class="section-tag">Category 1</div>
+<h2 class="section-title">ESTAR-Based Unit Root Tests</h2>
+<p class="section-sub">All four tests derive from a Taylor expansion of the ESTAR model:
+$y_t = y_{t-1} + \phi y_{t-1}\,[1 - e^{-\theta y_{t-1}^2}] + \varepsilon_t$,
+where under $H_0: \theta=0$ the process is a unit root and under $H_1: \theta>0$ it is globally stationary with nonlinear mean reversion.</p>
+
+<!-- KSS -->
+<div class="theory-card">
+  <h3><span class="theory-num">1</span> KSS (2003) — Nonlinear ESTAR Unit Root Test</h3>
+  <div class="theory-ref">Kapetanios, G., Shin, Y., &amp; Snell, A. (2003). <em>Testing for a unit root in the nonlinear STAR framework.</em> Journal of Econometrics, 112(2), 359–379.</div>
+  <p>Taking a first-order Taylor expansion of the transition function around $\theta=0$ gives the auxiliary regression:</p>
+  <div class="math-block">$$\Delta y_t = \beta_1 y_{t-1}^3 + \sum_{i=1}^{p} \rho_i \Delta y_{t-i} + u_t$$</div>
+  <p><strong>Test statistic:</strong> $t_{NL} = \hat{\beta}_1 / \text{se}(\hat{\beta}_1)$ — a standard $t$-ratio on the cubic term. <strong>Reject $H_0$ when $t_{NL} &lt; \text{CV}$</strong> (left-tailed).</p>
+  <p><strong>Case specification:</strong> <em>raw</em> — no adjustment; <em>demeaned</em> — subtract OLS mean; <em>detrended</em> — subtract OLS linear trend. The demeaned case is most common for exchange rates and commodity prices.</p>
+  <table class="cv-table" style="max-width:500px;">
+    <thead><tr><th>Case</th><th>1%</th><th>5%</th><th>10%</th></tr></thead>
+    <tbody>
+      <tr><td>Raw</td><td>-3.48</td><td>-2.93</td><td>-2.66</td></tr>
+      <tr><td>Demeaned</td><td>-3.93</td><td>-3.40</td><td>-3.13</td></tr>
+      <tr><td>Detrended</td><td>-3.40</td><td>-2.93</td><td>-2.66</td></tr>
+    </tbody>
+  </table>
+  <pre style="margin-top:.75rem;">result = tarur.kss_test(y, case='demeaned', max_lags=12, lag_method='aic')
+print(result)  # statistic, CVs, decision, interpretation</pre>
+</div>
+
+<!-- KRUSE -->
+<div class="theory-card">
+  <h3><span class="theory-num">2</span> Kruse (2011) — Modified Wald τ Test</h3>
+  <div class="theory-ref">Kruse, R. (2011). <em>A new unit root test against ESTAR based on a class of modified statistics.</em> Statistical Papers, 52(1), 71–85.</div>
+  <div class="fix-badge">⚠ Bug Fix: R NonlinearTSA uses standard Chi-squared — TARUR implements the correct modified Wald τ</div>
+  <p>KSS restricts the ESTAR location parameter $c=0$. Kruse relaxes this, giving auxiliary regression:</p>
+  <div class="math-block">$$\Delta y_t = \beta_1 y_{t-1}^3 + \beta_2 y_{t-1}^2 + \sum_{i=1}^{p} \rho_i \Delta y_{t-i} + u_t$$</div>
+  <p>The test statistic is <strong>not</strong> a standard Wald. It is the modified Wald:</p>
+  <div class="math-block">$$\tau = t^2_{\hat{\beta}_{2\perp}=0} + \mathbf{1}(\hat{\beta}_1 &lt; 0)\cdot t^2_{\hat{\beta}_1=0}$$</div>
+  <p>The indicator $\mathbf{1}(\hat{\beta}_1 &lt; 0)$ implements the one-sided alternative. <strong>Reject $H_0$ when $\tau &gt; \text{CV}$</strong> (right-tailed).</p>
+  <table class="cv-table" style="max-width:500px;">
+    <thead><tr><th>Case</th><th>1%</th><th>5%</th><th>10%</th></tr></thead>
+    <tbody>
+      <tr><td>Raw</td><td>13.15</td><td>9.53</td><td>7.85</td></tr>
+      <tr><td>Demeaned</td><td>13.75</td><td>10.17</td><td>8.60</td></tr>
+      <tr><td>Detrended</td><td>17.10</td><td>12.82</td><td>11.10</td></tr>
+    </tbody>
+  </table>
+  <pre>result = tarur.kruse_test(y, case='demeaned', max_lags=12)</pre>
+</div>
+
+<!-- SOLLIS 2009 -->
+<div class="theory-card">
+  <h3><span class="theory-num">3</span> Sollis (2009) — Asymmetric ESTAR Test</h3>
+  <div class="theory-ref">Sollis, R. (2009). <em>A simple unit root test against asymmetric STAR nonlinearity.</em> Economic Modelling, 26(1), 118–125.</div>
+  <div class="fix-badge">⚠ Bug Fix: R code uses wrong auxiliary regression — TARUR implements the correct AESTAR formulation</div>
+  <p>Extends ESTAR to allow <strong>asymmetric adjustment</strong>: upward and downward departures from equilibrium revert at different speeds. Auxiliary regression:</p>
+  <div class="math-block">$$\Delta y_t = \phi_1 y_{t-1}^3 + \phi_2 y_{t-1}^4 + \sum_{i=1}^{p} \kappa_i \Delta y_{t-i} + \eta_t$$</div>
+  <p>Two statistics are computed:</p>
+  <ul style="margin:.5rem 0 .5rem 1.5rem;color:var(--text2);font-size:.92rem;line-height:2;">
+    <li><strong>$F_{AE}$</strong>: Joint $F$-test of $H_0: \phi_1=\phi_2=0$ — the unit root test (reject when $F_{AE} &gt; \text{CV}$)</li>
+    <li><strong>$F_{as}$</strong>: $F$-test of $H_0: \phi_2=0$ — symmetry test (reject $\Rightarrow$ asymmetric mean reversion)</li>
+  </ul>
+  <pre>result = tarur.sollis2009_test(y, case='demeaned', max_lags=12)
+print(f"Symmetry Fas: {result.extra['Fas']:.3f}  p={result.extra['Fas_pvalue']:.4f}")
+print(result.extra['symmetry_test'])</pre>
+</div>
+
+<!-- HU CHEN -->
+<div class="theory-card">
+  <h3><span class="theory-num">4</span> Hu &amp; Chen (2016) — 3-Parameter Modified Wald</h3>
+  <div class="theory-ref">Hu, J., &amp; Chen, Z. (2016). <em>A unit root test against globally stationary ESTAR models when local condition is non-stationary.</em> Economics Letters, 146, 89–94.</div>
+  <div class="fix-badge">⚠ Bug Fix: R code applies same error as Kruse — TARUR uses correct 3-parameter orthogonalized Wald</div>
+  <p>Allows a locally non-stationary (explosive) but globally stationary ESTAR process. Auxiliary regression adds the linear term:</p>
+  <div class="math-block">$$\Delta y_t = \beta_1 y_{t-1} + \beta_2 y_{t-1}^2 + \beta_3 y_{t-1}^3 + \sum_{i=1}^{p} \rho_i \Delta y_{t-i} + u_t$$</div>
+  <p>The 3-parameter modified Wald statistic (right-tailed) has higher power than KSS when the data-generating process is locally explosive.</p>
+  <pre>result = tarur.hu_chen_test(y, case='demeaned', max_lags=12)</pre>
+</div>
+
+</div>
+</section>
+
+<section class="section section-alt" id="smooth">
+<div class="container">
+<div class="section-tag">Category 2</div>
+<h2 class="section-title">Smooth Transition Unit Root Tests</h2>
+<p class="section-sub">These tests first estimate a nonlinear smooth transition deterministic trend via NLS, subtract it, then apply an ADF test to the residuals. <strong>Each test has its own distinct critical values</strong> from its original paper — they are not interchangeable.</p>
+
+<!-- LNV -->
+<div class="theory-card">
+  <h3><span class="theory-num">5</span> LNV (1998) — Single Logistic Smooth Transition</h3>
+  <div class="theory-ref">Leybourne, S., Newbold, P., &amp; Vougas, D. (1998). <em>Unit roots and smooth transitions.</em> JTSA, 19(1), 83–97.</div>
+  <p>The logistic transition function: $S_t(\gamma,\tau) = \bigl[1 + \exp(-\gamma(t - \tau T))\bigr]^{-1}$ smoothly shifts from 0 to 1. Three models:</p>
+  <div class="math-block">$$\text{Model A: }\; y_t = \alpha_1 + \alpha_2 S_t + \nu_t$$</div>
+  <div class="math-block">$$\text{Model B: }\; y_t = \alpha_1 + \beta_1 t + \alpha_2 S_t + \nu_t$$</div>
+  <div class="math-block">$$\text{Model C: }\; y_t = \alpha_1 + \beta_1 t + \alpha_2 S_t + \beta_2 t\, S_t + \nu_t$$</div>
+  <p>NLS estimates $\gamma$ and $\tau$, then the ADF $t$-statistic on the detrended residuals $\hat{\nu}_t$ is compared to LNV Table I (not ADF tables!).</p>
+  <table class="cv-table" style="max-width:600px;">
+    <thead><tr><th>T</th><th colspan="3">Model A</th><th colspan="3">Model B</th></tr>
+    <tr><th></th><th>1%</th><th>5%</th><th>10%</th><th>1%</th><th>5%</th><th>10%</th></tr></thead>
+    <tbody>
+      <tr><td>50</td><td>-5.10</td><td>-4.36</td><td>-4.01</td><td>-5.77</td><td>-5.05</td><td>-4.64</td></tr>
+      <tr><td>100</td><td>-4.88</td><td>-4.23</td><td>-3.91</td><td>-5.48</td><td>-4.77</td><td>-4.43</td></tr>
+      <tr><td>200</td><td>-4.76</td><td>-4.16</td><td>-3.85</td><td>-5.20</td><td>-4.63</td><td>-4.34</td></tr>
+      <tr><td>500</td><td>-4.69</td><td>-4.10</td><td>-3.80</td><td>-5.14</td><td>-4.57</td><td>-4.28</td></tr>
+    </tbody>
+  </table>
+  <pre>result = tarur.lnv_test(y, model='A', max_lags=12)  # model: 'A', 'B', or 'C'</pre>
+</div>
+
+<!-- VOUGAS -->
+<div class="theory-card">
+  <h3><span class="theory-num">6</span> Vougas (2006) — Extended Single Transition (5 Models)</h3>
+  <div class="theory-ref">Vougas, D. (2006). <em>On unit root testing with smooth transitions.</em> Computational Statistics &amp; Data Analysis, 51(2), 797–800.</div>
+  <p>Extends LNV with five functional forms (Models A–E), including trend-only transition and exponential transition. Each model has a distinct CV table. Model A mirrors LNV but with updated CVs from Vougas (2006) Table 1.</p>
+  <pre>for m in ['A','B','C','D','E']:
+    r = tarur.vougas_test(y, model=m, max_lags=12)
+    print(f"Model {m}: t={r.statistic:.3f}, CV(5%)={r.critical_values.cv5:.3f}, {r.decision}")</pre>
+</div>
+
+<!-- HARVEY MILLS -->
+<div class="theory-card">
+  <h3><span class="theory-num">7</span> Harvey &amp; Mills (2002) — Double Smooth Transition</h3>
+  <div class="theory-ref">Harvey, D.I., &amp; Mills, T.C. (2002). <em>Unit roots and double smooth transitions.</em> J. Applied Statistics, 29(5), 675–683.</div>
+  <p>Allows <strong>two</strong> smooth transitions (two structural breaks). The double transition function is:</p>
+  <div class="math-block">$$y_t = \alpha_1 + \alpha_2 S_t^{(1)} + \alpha_3 S_t^{(2)} + \nu_t \ \ \text{(Model A)}$$</div>
+  <p>The CVs are <strong>substantially larger</strong> in absolute value than LNV because the more flexible double-transition alternative shifts the null distribution. Using LNV CVs here would lead to over-rejection.</p>
+  <table class="cv-table" style="max-width:500px;">
+    <thead><tr><th>T</th><th>1%</th><th>5%</th><th>10%</th></tr></thead>
+    <tbody>
+      <tr><td>50</td><td>-6.49</td><td>-5.73</td><td>-5.33</td></tr>
+      <tr><td>100</td><td>-6.05</td><td>-5.37</td><td>-5.04</td></tr>
+      <tr><td>200</td><td>-5.80</td><td>-5.20</td><td>-4.90</td></tr>
+      <tr><td>1000</td><td>-5.64</td><td>-5.07</td><td>-4.79</td></tr>
+    </tbody>
+  </table>
+  <pre>result = tarur.harvey_mills_test(y, model='A', max_lags=12)</pre>
+</div>
+</div>
+</section>
+
+<section class="section" id="tar">
+<div class="container">
+<div class="section-tag">Category 3</div>
+<h2 class="section-title">Asymmetric / TAR Unit Root Tests</h2>
+<p class="section-sub">Threshold autoregressive models allow the speed of adjustment to depend on whether the deviation from equilibrium is positive or negative — a key feature of many commodity prices and real exchange rates.</p>
+
+<!-- ENDERS GRANGER -->
+<div class="theory-card">
+  <h3><span class="theory-num">8</span> Enders &amp; Granger (1998) — MTAR Test</h3>
+  <div class="theory-ref">Enders, W., &amp; Granger, C.W.J. (1998). <em>Unit-root tests and asymmetric adjustment with an example using the term structure of interest rates.</em> JBES, 16(3), 304–311.</div>
+  <p>The Momentum Threshold Autoregression (MTAR) model uses the sign of $\Delta y_{t-1}$ as the threshold indicator:</p>
+  <div class="math-block">$$I_t = \begin{cases} 1 & \text{if } \Delta y_{t-1} \geq 0 \\ 0 & \text{if } \Delta y_{t-1} &lt; 0 \end{cases}$$</div>
+  <div class="math-block">$$\Delta \hat{u}_t = I_t \rho^+ \hat{u}_{t-1} + (1-I_t) \rho^- \hat{u}_{t-1} + \sum_{i=1}^{p} \delta_i \Delta \hat{u}_{t-i} + \varepsilon_t$$</div>
+  <p><strong>$\Phi$ statistic:</strong> Joint $F$-test $H_0: \rho^+=\rho^-=0$ (right-tailed). A second symmetry test checks $H_0: \rho^+=\rho^-$.</p>
+  <pre>result = tarur.enders_granger_test(y, case='demeaned', max_lags=12)
+print(f"rho+ = {result.extra['rho_pos']:.4f}, rho- = {result.extra['rho_neg']:.4f}")
+print(f"Symmetry F = {result.extra['F_symmetry']:.3f}, p = {result.extra['F_sym_pvalue']:.4f}")</pre>
+</div>
+
+<!-- SOLLIS 2004 -->
+<div class="theory-card">
+  <h3><span class="theory-num">9</span> Sollis (2004) — ST-TAR Test</h3>
+  <div class="theory-ref">Sollis, R. (2004). <em>Asymmetric adjustment and smooth transitions.</em> Journal of Time Series Analysis, 25(3), 409–417.</div>
+  <p>Combines logistic smooth transition detrending with TAR-type asymmetric adjustment. The smooth transition removes a structural break in the deterministic component before testing for a unit root.</p>
+  <pre>result = tarur.sollis2004_test(y, model='A', max_lags=12)</pre>
+</div>
+
+<!-- COOK VOUGAS -->
+<div class="theory-card">
+  <h3><span class="theory-num">10</span> Cook &amp; Vougas (2009) — ST-MTAR Test</h3>
+  <div class="theory-ref">Cook, S., &amp; Vougas, D. (2009). <em>Unit root testing against an ST-MTAR alternative.</em> Applied Economics, 41(11), 1397–1404.</div>
+  <p>Combines smooth transition detrending with MTAR asymmetric adjustment. The critical values are from <strong>Cook &amp; Vougas (2009) Table 1</strong> — they are substantially different from Sollis (2004) and must not be shared.</p>
+  <table class="cv-table" style="max-width:560px;">
+    <thead><tr><th>T</th><th colspan="3">Model A (F*&#945;)</th><th colspan="3">Model B (F*&#945;(&#946;))</th></tr>
+    <tr><th></th><th>1%</th><th>5%</th><th>10%</th><th>1%</th><th>5%</th><th>10%</th></tr></thead>
+    <tbody>
+      <tr><td>50</td><td>13.27</td><td>10.06</td><td>8.62</td><td>16.79</td><td>13.20</td><td>11.55</td></tr>
+      <tr><td>100</td><td>12.92</td><td>9.65</td><td>8.34</td><td>15.40</td><td>12.18</td><td>10.75</td></tr>
+      <tr><td>250</td><td>12.02</td><td>9.33</td><td>8.08</td><td>14.18</td><td>11.52</td><td>10.32</td></tr>
+    </tbody>
+  </table>
+  <pre>result = tarur.cook_vougas_test(y, model='A', max_lags=12)</pre>
+</div>
+</div>
+</section>
+
+<section class="section section-alt" id="grid">
+<div class="container">
+<div class="section-tag">Category 4</div>
+<h2 class="section-title">Grid-Search Tests</h2>
+<p class="section-sub">Rather than fixing the transition parameter, these tests search over a grid of values and take the infimum of the $t$-statistic, which gives higher power against ESTAR alternatives.</p>
+
+<!-- KILIC -->
+<div class="theory-card">
+  <h3><span class="theory-num">11</span> Kılıç (2011) — inf-t Grid Search</h3>
+  <div class="theory-ref">Kılıç, R. (2011). <em>Testing for a unit root in a stationary ESTAR process.</em> Econometric Reviews, 30(3), 274–302.</div>
+  <p>For each $\gamma$ in a grid $\Gamma$, the KSS $t$-statistic is computed. The test statistic is the infimum:</p>
+  <div class="math-block">$$\inf_{\gamma \in \Gamma}\; t_{NL}(\gamma)$$</div>
+  <p>Because of the grid search, the null distribution differs from KSS — the critical values are <strong>larger in absolute value</strong>.</p>
+  <table class="cv-table" style="max-width:400px;">
+    <thead><tr><th>Case</th><th>1%</th><th>5%</th><th>10%</th></tr></thead>
+    <tbody>
+      <tr><td>Raw</td><td>-3.78</td><td>-3.22</td><td>-2.93</td></tr>
+      <tr><td>Demeaned</td><td>-4.29</td><td>-3.71</td><td>-3.42</td></tr>
+      <tr><td>Detrended</td><td>-4.73</td><td>-4.17</td><td>-3.88</td></tr>
+    </tbody>
+  </table>
+  <pre>result = tarur.kilic_test(y, case='demeaned', max_lags=12)
+print(f"Optimal gamma: {result.extra['optimal_gamma']:.4f}")</pre>
+</div>
+
+<!-- PARK SHINTANI -->
+<div class="theory-card">
+  <h3><span class="theory-num">12</span> Park &amp; Shintani (2016) — Transitional AR</h3>
+  <div class="theory-ref">Park, J.Y., &amp; Shintani, M. (2016). <em>Testing for a unit root against transitional autoregressive models.</em> International Economic Review, 57(2), 635–664.</div>
+  <p>A more general grid-search approach that nests the ESTAR model and allows a broader class of transition functions. Asymptotic critical values are tabulated in Park &amp; Shintani (2016) Table 1.</p>
+  <pre>result = tarur.park_shintani_test(y, case='raw', max_lags=12)</pre>
+</div>
+</div>
+</section>
+
+<section class="section" id="extended">
+<div class="container">
+<div class="section-tag">Category 5</div>
+<h2 class="section-title">Extended Tests</h2>
+
+<div class="theory-card">
+  <h3><span class="theory-num">13</span> Pascalau (2007) — Asymmetric NLSTAR</h3>
+  <div class="theory-ref">Pascalau, R. (2007). <em>Unit root tests with smooth breaks: an application to the Nelson-Plosser data set.</em> Working Paper.</div>
+  <p>Extends the ESTAR auxiliary regression with additional polynomial terms ($y^4$), allowing for richer asymmetric dynamics:</p>
+  <div class="math-block">$$\Delta y_t = \beta_1 y_{t-1}^2 + \beta_2 y_{t-1}^3 + \beta_3 y_{t-1}^4 + \sum \rho_i \Delta y_{t-i} + u_t$$</div>
+  <p>Joint $F$-test $H_0: \beta_1=\beta_2=\beta_3=0$ (right-tailed). Simulated CVs: 1%: 9.35, 5%: 6.82, 10%: 5.68.</p>
+  <pre>result = tarur.pascalau_test(y, case='demeaned', max_lags=12)</pre>
+</div>
+
+<div class="theory-card">
+  <h3><span class="theory-num">14</span> Cuestas &amp; Garratt (2011) — Cubic Polynomial Detrending</h3>
+  <div class="theory-ref">Cuestas, J.C., &amp; Garratt, D. (2011). <em>Is real GDP per capita a stationary process? Smooth transitions, nonlinear trends and unit root testing.</em> Applied Economics, 43(11), 1431–1437.</div>
+  <p>Fits a cubic polynomial trend $\mu(t) = c_0 + c_1 t + c_2 t^2 + c_3 t^3$, then applies a KSS-type test to the detrended series. The $\chi^2$ statistic tests $H_0: \beta_1=\beta_2=0$ in the detrended auxiliary regression.</p>
+  <pre>result = tarur.cuestas_garratt_test(y, max_lags=12)</pre>
+</div>
+
+<div class="theory-card">
+  <h3><span class="theory-num">15</span> Cuestas &amp; Ordóñez (2014) — NLS Logistic Detrending + KSS</h3>
+  <div class="theory-ref">Cuestas, J.C., &amp; Ordóñez, J. (2014). <em>Smooth transitions, asymmetric adjustment and unit roots.</em> Applied Economics Letters, 21(14), 969–972.</div>
+  <p>First removes a smooth transition trend via NLS (logistic form), then applies the standard KSS test to the residuals. The paper shows that KSS critical values remain valid for the NLS-detrended residuals.</p>
+  <pre>result = tarur.cuestas_ordonez_test(y, max_lags=12)</pre>
+</div>
+</div>
+</section>
+
+<section class="section section-alt" id="coint">
+<div class="container">
+<div class="section-tag">Category 6</div>
+<h2 class="section-title">Nonlinear Cointegration Tests</h2>
+
+<div class="theory-card">
+  <h3><span class="theory-num">16</span> KSS Nonlinear Cointegration (2006)</h3>
+  <div class="theory-ref">Kapetanios, G., Shin, Y., &amp; Snell, A. (2006). <em>Testing for cointegration in nonlinear smooth transition error correction models.</em> Econometric Theory, 22(2), 279–303.</div>
+  <p>Estimate the static cointegrating regression $y_{1t} = \alpha + \beta y_{2t} + u_t$, then apply the KSS test to $\hat{u}_t$. Under nonlinear cointegration, the equilibrium error is a globally stationary ESTAR process rather than a linear AR(1).</p>
+  <pre>result = tarur.kss_cointegration_test(y1, y2, case='demeaned', max_lags=12)</pre>
+</div>
+
+<div class="theory-card">
+  <h3><span class="theory-num">17</span> Enders &amp; Siklos (2001) — TAR Cointegration</h3>
+  <div class="theory-ref">Enders, W., &amp; Siklos, P.L. (2001). <em>Cointegration and threshold adjustment.</em> JBES, 19(2), 166–176.</div>
+  <p>Tests cointegration where the equilibrium error follows a TAR or MTAR process — adjustment toward equilibrium is faster in one direction than the other. The $\Phi^*$ statistic tests $\rho^+=\rho^-=0$.</p>
+  <pre>result = tarur.enders_siklos_test(y1, y2, max_lags=12)</pre>
+</div>
+</div>
+</section>
+
+<section class="section" id="linearity">
+<div class="container">
+<div class="section-tag">Category 7</div>
+<h2 class="section-title">Linearity &amp; Diagnostic Tests</h2>
+
+<div class="theory-card">
+  <h3><span class="theory-num">18</span> Teräsvirta (1994) — Linearity Test</h3>
+  <div class="theory-ref">Teräsvirta, T. (1994). <em>Specification, estimation, and evaluation of smooth transition autoregressive models.</em> JASA, 89(425), 208–218.</div>
+  <p>Tests $H_0$: linearity against a STAR alternative via a third-order Taylor expansion. The sequential procedure also distinguishes between LSTAR and ESTAR:</p>
+  <div class="math-block">$$H_{01}: \delta_3=0,\quad H_{02}: \delta_2=0|\delta_3=0,\quad H_{03}: \delta_1=0|\delta_2=\delta_3=0$$</div>
+  <ul style="margin:.5rem 0 .5rem 1.5rem;color:var(--text2);font-size:.92rem;line-height:2;">
+    <li>If $H_{02}$ is rejected most strongly → <strong>ESTAR</strong></li>
+    <li>If $H_{01}$ or $H_{03}$ rejected most strongly → <strong>LSTAR</strong></li>
+  </ul>
+  <pre>result = tarur.terasvirta_test(np.diff(y), d=1)
+print(f"p-value: {result.extra['p_linearity']:.4f}")
+print(f"Suggested: {result.extra['suggested_model']}")
+print(f"H01 F={result.extra['H01']:.3f}, H02 F={result.extra['H02']:.3f}, H03 F={result.extra['H03']:.3f}")</pre>
+</div>
+</div>
+</section>
+
+<section class="section section-alt" id="cvtable">
+<div class="container">
+<div class="section-tag">Reference</div>
+<h2 class="section-title">Critical Value Master Table</h2>
+<p class="section-sub">Every test in TARUR uses its own critical values from its original paper. The table below maps each test to its source, table number, sample sizes, and tail direction.</p>
+<div class="test-table-wrap">
+<table class="test-table">
+<thead><tr><th>Test</th><th>Paper Source</th><th>Table</th><th>T (sample sizes)</th><th>Tail</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td>KSS (2003)</td><td>KSS (2003)</td><td>Table 1</td><td>Asymptotic</td><td class="tag tag-left">Left</td><td>t-type</td></tr>
+<tr><td>Kruse (2011)</td><td>Kruse (2011)</td><td>Table 1</td><td>T=1000</td><td class="tag tag-right">Right</td><td>Wald &#964;</td></tr>
+<tr><td>Sollis (2009)</td><td>Sollis (2009)</td><td>Table 1</td><td>50,100,200 (interp.)</td><td class="tag tag-right">Right</td><td>F-type</td></tr>
+<tr><td>Hu &amp; Chen (2016)</td><td>Hu &amp; Chen (2016)</td><td>Table 1</td><td>T=1000</td><td class="tag tag-right">Right</td><td>Wald &#964;</td></tr>
+<tr><td>LNV (1998)</td><td>LNV (1998)</td><td>Table I</td><td>25–500 (interp.)</td><td class="tag tag-left">Left</td><td>t-type</td></tr>
+<tr><td>Vougas (2006)</td><td>Vougas (2006)</td><td>Table 1</td><td>25–500 (interp.)</td><td class="tag tag-left">Left</td><td>t-type</td></tr>
+<tr><td>Harvey &amp; Mills (2002)</td><td>H&amp;M (2002)</td><td>Table 1</td><td>50–1000 (interp.)</td><td class="tag tag-left">Left</td><td>t-type</td></tr>
+<tr><td>Enders &amp; Granger (1998)</td><td>E&amp;G (1998)</td><td>Table 1</td><td>Asymptotic</td><td class="tag tag-right">Right</td><td>F-type</td></tr>
+<tr><td>Cook &amp; Vougas (2009)</td><td>C&amp;V (2009)</td><td>Table 1</td><td>50–500 (interp.)</td><td class="tag tag-right">Right</td><td>F-type</td></tr>
+<tr><td>Sollis (2004)</td><td>Sollis (2004)</td><td>Table II</td><td>T=100</td><td class="tag tag-right">Right</td><td>F-type</td></tr>
+<tr><td>Kili&#231; (2011)</td><td>Kili&#231; (2011)</td><td>Table 1</td><td>Asymptotic</td><td class="tag tag-left">Left</td><td>t-type</td></tr>
+<tr><td>Park &amp; Shintani (2016)</td><td>P&amp;S (2016)</td><td>Table 1</td><td>Asymptotic</td><td class="tag tag-left">Left</td><td>t-type</td></tr>
+<tr><td>Pascalau (2007)</td><td>Pascalau (2007)</td><td>Simulated</td><td>Simulated</td><td class="tag tag-right">Right</td><td>F-type</td></tr>
+<tr><td>Cuestas &amp; Garratt (2011)</td><td>C&amp;G (2011)</td><td>Simulated</td><td>Simulated</td><td class="tag tag-right">Right</td><td>&#967;&#178;-type</td></tr>
+</tbody>
+</table>
+</div>
+<div class="alert alert-info" style="margin-top:1.5rem;">
+<span>ℹ</span>
+<span><strong>Finite-sample interpolation:</strong> For tests with multiple T entries, TARUR automatically linearly interpolates between the two closest available sample sizes to your actual T.</span>
+</div>
+</div>
+</section>
+<footer>
+  <div class="footer-logo">TARUR</div>
+  <div class="footer-sub">Nonlinear Unit Root Testing Library for Python &middot; v1.0.1</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a><a href="guide.html">Theory Guide</a><a href="api.html">API Reference</a>
+    <a href="https://github.com/merwanroudane/tarur" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/tarur/" target="_blank">PyPI</a>
+  </div>
+  <div class="footer-author">
+    Developed by <strong>Dr. Merwan Roudane</strong> &middot;
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a> &middot;
+    <a href="https://github.com/merwanroudane" target="_blank">github.com/merwanroudane</a><br/><br/>
+    <span style="color:#475569;">MIT License &middot; Built for the econometrics community</span>
+  </div>
+</footer></body></html>
